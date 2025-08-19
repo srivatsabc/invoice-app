@@ -1,0 +1,12 @@
+2025-07-06 19:34:37 - invoice-api - INFO - Request started | ID: f40f8442-7b51-4eec-a260-42f695682965 | POST http://localhost:8099/process-invoice | Client: 127.0.0.1
+2025-07-06 19:35:00 - invoice-api - INFO - [92mRequest completed successfully | ID: f40f8442-7b51-4eec-a260-42f695682965 | POST http://localhost:8099/process-invoice | Status: 200 | Duration: 22.5676s[0m
+2025-07-06 19:35:51 - invoice-api - INFO - Request started | ID: 1f735d03-416f-439a-bf14-accd2a0a18c4 | POST http://localhost:8099/process-invoice | Client: 127.0.0.1
+2025-07-06 19:36:14 - invoice-api - INFO - [92mRequest completed successfully | ID: 1f735d03-416f-439a-bf14-accd2a0a18c4 | POST http://localhost:8099/process-invoice | Status: 200 | Duration: 22.8627s[0m
+2025-07-06 19:42:03 - invoice-api - INFO - Request started | ID: 16f89938-38ce-4d82-812c-943354dd3504 | POST http://localhost:8099/test-import | Client: 127.0.0.1
+2025-07-06 19:42:03 - invoice-api - WARNING - [93mRequest completed with client error | ID: 16f89938-38ce-4d82-812c-943354dd3504 | POST http://localhost:8099/test-import | Status: 405 | Duration: 0.0018s[0m
+2025-07-06 19:42:07 - invoice-api - INFO - Request started | ID: 43850de4-4579-49ed-b403-1c80e133891a | GET http://localhost:8099/test-import | Client: 127.0.0.1
+2025-07-06 19:42:07 - invoice-api - INFO - [92mRequest completed successfully | ID: 43850de4-4579-49ed-b403-1c80e133891a | GET http://localhost:8099/test-import | Status: 200 | Duration: 0.0009s[0m
+2025-07-06 19:42:29 - invoice-api - INFO - Request started | ID: 3599578e-f4cd-47fb-84ca-dc6c594392c8 | POST http://localhost:8099/process-invoice | Client: 127.0.0.1
+2025-07-06 19:42:52 - invoice-api - INFO - [92mRequest completed successfully | ID: 3599578e-f4cd-47fb-84ca-dc6c594392c8 | POST http://localhost:8099/process-invoice | Status: 200 | Duration: 23.7448s[0m
+2025-07-06 19:45:23 - invoice-api - INFO - Request started | ID: 38baee60-1675-4543-9146-5753e7bfb3f4 | POST http://localhost:8099/test-file-upload | Client: 127.0.0.1
+2025-07-06 19:45:23 - invoice-api - INFO - [92mRequest completed successfully | ID: 38baee60-1675-4543-9146-5753e7bfb3f4 | POST http://localhost:8099/test-file-upload | Status: 200 | Duration: 0.0024s[0m

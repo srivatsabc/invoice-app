@@ -1,0 +1,43 @@
+# Core FastAPI and ASGI server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Data validation and serialization
+pydantic
+
+# Database connectivity
+pyodbc
+
+# LangChain ecosystem for SQL agent
+langchain
+langchain-openai
+langchain-community
+langchain-qdrant
+
+# Vector database
+qdrant-client
+
+# Redis for session management
+redis
+
+# Image processing (for invoice analysis)
+pillow
+
+# Data science and visualization
+matplotlib
+numpy
+
+# Additional utilities that might be needed
+python-dateutil
+requests
+
+# Optional: For better development experience
+python-dotenv
+
+# Optional: For enhanced logging (if you want structured logging)
+structlog
+
+# Optional: For better error handling and monitoring
+sentry-sdk[fastapi]
+pymssql==2.2.11

@@ -1,0 +1,51 @@
+{
+  "regions": [
+    "NA",
+    "EMEA",
+    "APAC",
+    "LATAM"
+  ],
+  "countries": {
+    "NA": [
+      "US",
+      "CA",
+      "MX"
+    ],
+    "EMEA": [
+      "UK",
+      "DE",
+      "FR",
+      "ES",
+      "IT"
+    ],
+    "APAC": [
+      "IN",
+      "SG",
+      "AU",
+      "JP",
+      "CN"
+    ],
+    "LATAM": [
+      "BR",
+      "AR",
+      "CL",
+      "CO",
+      "PE"
+    ]
+  },
+  "vendors": [
+    "ADP India PVT Ltd.",
+    "Stanley Engg.",
+    "Global Office Supplies",
+    "Tech Solutions Inc.",
+    "Maple Technologies",
+    "European Supplies Ltd.",
+    "Deutsche Tech GmbH",
+    "Tokyo Electronics",
+    "Sydney Office Co."
+  ],
+  "dateRange": {
+    "from": "2024-06-01",
+    "to": "2024-06-30"
+  }
+}

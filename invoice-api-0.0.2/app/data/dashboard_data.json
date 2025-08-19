@@ -1,0 +1,198 @@
+{
+  "statistics": {
+    "totalProcessed": 25000,
+    "totalSuccess": 23500,
+    "totalFailed": 1500
+  },
+  "processingTrend": {
+    "labels": [
+      "06/01/2024", "06/02/2024", "06/03/2024", "06/04/2024", "06/05/2024", 
+      "06/06/2024", "06/07/2024", "06/08/2024", "06/09/2024", "06/10/2024",
+      "06/11/2024", "06/12/2024", "06/13/2024", "06/14/2024", "06/15/2024",
+      "06/16/2024", "06/17/2024", "06/18/2024", "06/19/2024", "06/20/2024",
+      "06/21/2024", "06/22/2024", "06/23/2024", "06/24/2024", "06/25/2024",
+      "06/26/2024", "06/27/2024", "06/28/2024", "06/29/2024", "06/30/2024"
+    ],
+    "success": [
+      250, 280, 260, 275, 290, 310, 320, 300, 290, 350,
+      370, 380, 400, 410, 390, 420, 450, 470, 430, 425,
+      480, 500, 520, 510, 530, 540, 550, 570, 580, 600
+    ],
+    "failed": [
+      20, 15, 25, 18, 22, 30, 25, 28, 20, 35,
+      32, 40, 38, 36, 42, 38, 45, 40, 48, 52,
+      55, 50, 60, 58, 62, 57, 60, 65, 70, 75
+    ]
+  },
+  "top5Fields": {
+    "header": {
+      "fields": ["Invoice Number", "PO Number", "Invoice Date", "Due Date", "Total Amount"],
+      "values": [
+        {
+          "field": "Invoice Number",
+          "topValues": [
+            { "value": "INV-123", "count": 150 },
+            { "value": "INV-456", "count": 120 },
+            { "value": "INV-789", "count": 110 },
+            { "value": "INV-234", "count": 90 },
+            { "value": "INV-567", "count": 85 }
+          ]
+        },
+        {
+          "field": "PO Number",
+          "topValues": [
+            { "value": "PO-5678", "count": 200 },
+            { "value": "PO-1234", "count": 180 },
+            { "value": "PO-9012", "count": 160 },
+            { "value": "PO-3456", "count": 150 },
+            { "value": "PO-7890", "count": 140 }
+          ]
+        },
+        {
+          "field": "Invoice Date",
+          "topValues": [
+            { "value": "2024-06-15", "count": 250 },
+            { "value": "2024-06-20", "count": 230 },
+            { "value": "2024-06-10", "count": 210 },
+            { "value": "2024-06-05", "count": 200 },
+            { "value": "2024-06-25", "count": 190 }
+          ]
+        },
+        {
+          "field": "Due Date",
+          "topValues": [
+            { "value": "2024-07-15", "count": 260 },
+            { "value": "2024-07-20", "count": 240 },
+            { "value": "2024-07-10", "count": 220 },
+            { "value": "2024-07-05", "count": 210 },
+            { "value": "2024-07-25", "count": 200 }
+          ]
+        },
+        {
+          "field": "Total Amount",
+          "topValues": [
+            { "value": "$5000", "count": 180 },
+            { "value": "$10000", "count": 160 },
+            { "value": "$7500", "count": 150 },
+            { "value": "$12500", "count": 140 },
+            { "value": "$15000", "count": 130 }
+          ]
+        }
+      ]
+    },
+    "lineItems": {
+      "fields": ["Item Description", "Quantity", "Unit Price", "Total Price", "Tax Rate"],
+      "values": [
+        {
+          "field": "Item Description",
+          "topValues": [
+            { "value": "Engineering Services", "count": 200 },
+            { "value": "Software Development", "count": 180 },
+            { "value": "Consulting Services", "count": 170 },
+            { "value": "Hardware Components", "count": 160 },
+            { "value": "Office Supplies", "count": 150 }
+          ]
+        },
+        {
+          "field": "Quantity",
+          "topValues": [
+            { "value": "1", "count": 350 },
+            { "value": "5", "count": 250 },
+            { "value": "10", "count": 200 },
+            { "value": "2", "count": 180 },
+            { "value": "3", "count": 160 }
+          ]
+        },
+        {
+          "field": "Unit Price",
+          "topValues": [
+            { "value": "$100", "count": 220 },
+            { "value": "$150", "count": 200 },
+            { "value": "$200", "count": 180 },
+            { "value": "$75", "count": 160 },
+            { "value": "$50", "count": 150 }
+          ]
+        },
+        {
+          "field": "Total Price",
+          "topValues": [
+            { "value": "$500", "count": 210 },
+            { "value": "$1000", "count": 190 },
+            { "value": "$1500", "count": 180 },
+            { "value": "$2000", "count": 170 },
+            { "value": "$2500", "count": 160 }
+          ]
+        },
+        {
+          "field": "Tax Rate",
+          "topValues": [
+            { "value": "8.5%", "count": 300 },
+            { "value": "7.25%", "count": 280 },
+            { "value": "9.5%", "count": 250 },
+            { "value": "6.75%", "count": 230 },
+            { "value": "5.5%", "count": 210 }
+          ]
+        }
+      ]
+    },
+    "taxData": {
+      "fields": ["Tax Amount", "Tax Category", "Tax Jurisdiction", "Tax Registration"],
+      "values": [
+        {
+          "field": "Tax Amount",
+          "topValues": [
+            { "value": "$425", "count": 220 },
+            { "value": "$850", "count": 200 },
+            { "value": "$1275", "count": 180 },
+            { "value": "$1700", "count": 160 },
+            { "value": "$2125", "count": 150 }
+          ]
+        },
+        {
+          "field": "Tax Category",
+          "topValues": [
+            { "value": "VAT", "count": 300 },
+            { "value": "GST", "count": 250 },
+            { "value": "Sales Tax", "count": 200 },
+            { "value": "Service Tax", "count": 180 },
+            { "value": "Use Tax", "count": 150 }
+          ]
+        },
+        {
+          "field": "Tax Jurisdiction",
+          "topValues": [
+            { "value": "State", "count": 350 },
+            { "value": "Federal", "count": 280 },
+            { "value": "Local", "count": 250 },
+            { "value": "County", "count": 220 },
+            { "value": "Municipal", "count": 200 }
+          ]
+        },
+        {
+          "field": "Tax Registration",
+          "topValues": [
+            { "value": "VAT20230001", "count": 180 },
+            { "value": "GST20230002", "count": 170 },
+            { "value": "ST20230003", "count": 160 },
+            { "value": "VAT20230004", "count": 150 },
+            { "value": "GST20230005", "count": 140 }
+          ]
+        }
+      ]
+    }
+  },
+  "filters": {
+    "regions": ["NA", "EMEA", "APAC", "LATAM"],
+    "countries": {
+      "NA": ["US", "CA", "MX"],
+      "EMEA": ["UK", "DE", "FR", "ES", "IT"],
+      "APAC": ["IN", "SG", "AU", "JP", "CN"],
+      "LATAM": ["BR", "AR", "CL", "CO", "PE"]
+    },
+    "vendors": ["ADP India PVT Ltd.", "Stanley Engg.", "Global Office Supplies", "Tech Solutions Inc.", "Maple Technologies", "European Supplies Ltd.", "Deutsche Tech GmbH", "Tokyo Electronics", "Sydney Office Co."],
+    "dateRange": {
+      "from": "2024-06-01",
+      "to": "2024-06-30"
+    }
+  }
+}

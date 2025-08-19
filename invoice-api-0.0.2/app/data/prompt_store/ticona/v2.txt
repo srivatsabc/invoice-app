@@ -1,0 +1,20 @@
+INVOICE EXTRACTION INSTRUCTIONS:  
+
+1. The overall invoice total should NEVER be assigned as a price to any individual line item.
+2. Column headers (like \\\"PART IDENTIFICATION\\\", \\\"Line No\\\", \\\"QTY SHIP\\\", \\\"EXT AMT\\\") are not line item descriptions - don't confuse them with actual product descriptions.
+3. Line items without explicit unit prices should have zero values for price fields, not the invoice total.
+4. On the final page of multi-page invoices, distinguish between:\n   - The invoice TOTAL (belongs in header.total)\n   - Individual line items (need their own specific prices, if shown only)
+5. Line items showing only reference information without explicit pricing should have zero price values.
+6. Do not use \\\"Part Identification\\\" as a description - this is a column header, not the actual description.
+7. For each line item, verify that the price comes from the appropriate unit price or amount column for that specific item only.
+8. Differentiate between actual line items and summary information - summary totals belong in the header, not as line items.
+9. Extract the Quantity and Line No for each line item:
+	- If a line item spans multiple pages, the quantity may appear on an earlier page, and the line number on a later one — these must be correlated and combined.
+	- Some items may not have a line number — in such cases, leave the line number field blank or null.
+	- The line number is often found in the 4th line of the item description block — parse accordingly to extract it.
+10. Pay special attention to items at page breaks - these may appear to be continued items but are often distinct line items with their own quantities and values.
+11. Each distinct part number and quantity combination represents a separate line item. Do not merge similar items.
+12. Remember that a line item description starts with an NA number like NA002472 and ends with a line number like Line No: 1.000. A line item might spill over to the next page. But remember that a line item always starts with QTY SHIP.
+13. A DAFG type line item would not have an NA number. Usually the DAFG line item is and the end of the line items is always one line item.
+14. If the line item in a new page begins with a Line no, then the Line no belongs to the last item of the previous page (due to spill over of the line item).
+15. A line number is not continous. It can go from 5.002 to 7.000 to 7.001 to 8.000 to 10.000 as an example.

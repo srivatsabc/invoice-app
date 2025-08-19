@@ -1,0 +1,130 @@
+{
+  "invoices": {
+    "INV-123": {
+      "header": {
+        "region": "NA",
+        "country": "USA",
+        "vendor": "ADP India PVT Ltd.",
+        "invoiceNumber": "INV-123",
+        "vendorAddress": "Financial Shared Services, Dept C P.O. Box 311 Auburn IN 46706",
+        "poNumber": "102022",
+        "taxId": "52521",
+        "shipmentNumber": "2222",
+        "receivedDate": "2024-06-16",
+        "processedDate": "2024-06-17"
+      },
+      "lineItems": [
+        {
+          "id": "1",
+          "description": "Engineering Services - Software Development",
+          "quantity": 120,
+          "unitPrice": 150.00,
+          "totalPrice": 18000.00,
+          "taxRate": 8.5
+        }
+      ],
+      "taxData": [
+        {
+          "id": "1", 
+          "taxAmount": 1530.00,
+          "taxCategory": "VAT",
+          "taxJurisdiction": "State",
+          "taxRegistration": "VAT20230001"
+        }
+      ],
+      "pdfUrl": "sample_invoice.pdf"
+    },
+    "INV-456": {
+      "header": {
+        "region": "NA",
+        "country": "USA",
+        "vendor": "Stanley Engg.",
+        "invoiceNumber": "INV-456",
+        "vendorAddress": "250 Innovation Drive, Stanley Campus, Hartford CT 06103",
+        "poNumber": "103456",
+        "taxId": "63428",
+        "shipmentNumber": "3345",
+        "receivedDate": "2024-06-17",
+        "processedDate": "2024-06-18"
+      },
+      "lineItems": [
+        {
+          "id": "1",
+          "description": "Hardware Components - Electrical Systems",
+          "quantity": 5,
+          "unitPrice": 850.00,
+          "totalPrice": 4250.00,
+          "taxRate": 7.25
+        },
+        {
+          "id": "2",
+          "description": "Installation Services",
+          "quantity": 24,
+          "unitPrice": 135.00,
+          "totalPrice": 3240.00,
+          "taxRate": 0.0
+        }
+      ],
+      "taxData": [
+        {
+          "id": "1", 
+          "taxAmount": 308.13,
+          "taxCategory": "Sales Tax",
+          "taxJurisdiction": "State",
+          "taxRegistration": "ST20230054"
+        }
+      ],
+      "pdfUrl": "sample_invoice.pdf"
+    },
+    "INV-789": {
+      "header": {
+        "region": "NA",
+        "country": "USA",
+        "vendor": "Global Office Supplies",
+        "invoiceNumber": "INV-789",
+        "vendorAddress": "1000 Commerce Parkway, Suite 400, Chicago IL 60607",
+        "poNumber": "104789",
+        "taxId": "78521",
+        "shipmentNumber": "4578",
+        "receivedDate": "2024-06-02",
+        "processedDate": "2024-06-03"
+      },
+      "lineItems": [
+        {
+          "id": "1",
+          "description": "Office Supplies - Paper Products",
+          "quantity": 50,
+          "unitPrice": 24.50,
+          "totalPrice": 1225.00,
+          "taxRate": 9.25
+        },
+        {
+          "id": "2",
+          "description": "Office Supplies - Writing Instruments",
+          "quantity": 100,
+          "unitPrice": 8.50,
+          "totalPrice": 850.00,
+          "taxRate": 9.25
+        },
+        {
+          "id": "3",
+          "description": "Office Furniture - Ergonomic Chairs",
+          "quantity": 2,
+          "unitPrice": 125.00,
+          "totalPrice": 250.00,
+          "taxRate": 9.25
+        }
+      ],
+      "taxData": [
+        {
+          "id": "1", 
+          "taxAmount": 215.06,
+          "taxCategory": "Sales Tax",
+          "taxJurisdiction": "State",
+          "taxRegistration": "ST20230112"
+        }
+      ],
+      "pdfUrl": "sample_invoice.pdf"
+    }
+  }
+}

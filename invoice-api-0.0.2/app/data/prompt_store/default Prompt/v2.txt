@@ -1,0 +1,293 @@
+INVOICE EXTRACTION INSTRUCTIONS:  
+
+1. The overall invoice total should NEVER be assigned as a price to any individual line item.
+2. Column headers (like \\\"PART IDENTIFICATION\\\", \\\"Line No\\\", \\\"QTY SHIP\\\", \\\"EXT AMT\\\") are not line item descriptions - don't confuse them with actual product descriptions.
+3. Line items without explicit unit prices should have zero values for price fields, not the invoice total.
+4. On the final page of multi-page invoices, distinguish between:\n   - The invoice TOTAL (belongs in header.total)\n   - Individual line items (need their own specific prices, if shown only)
+5. Line items showing only reference information without explicit pricing should have zero price values.
+6. Do not use \\\"Part Identification\\\" as a description - this is a column header, not the actual description.
+7. For each line item, verify that the price comes from the appropriate unit price or amount column for that specific item only.
+8. Differentiate between actual line items and summary information - summary totals belong in the header, not as line items.
+9. Extract the Quantity and Line No for each line item:
+	- If a line item spans multiple pages, the quantity may appear on an earlier page, and the line number on a later one — these must be correlated and combined.
+	- Some items may not have a line number — in such cases, leave the line number field blank or null.
+	- The line number is often found in the 4th line of the item description block — parse accordingly to extract it.
+10. Pay special attention to items at page breaks - these may appear to be continued items but are often distinct line items with their own quantities and values.
+11. Each distinct part number and quantity combination represents a separate line item. Do not merge similar items.
+
+Extract as per schema given below:
+
+{
+   "schema":{
+      "title":"EnhancedInvoice",
+      "type":"object",
+      "properties":{
+         "invoice_number":{
+            "title":"InvoiceNumber",
+            "description":"The unique identifier for this invoice (e.g., 4249560)",
+            "type":"string"
+         },
+         "issue_date":{
+            "title":"IssueDate",
+            "description":"The date when the invoice was issued (e.g., 06/20/24)",
+            "type":"string"
+         },
+         "due_date":{
+            "title":"DueDate",
+            "description":"Calculate from payment terms (e.g., Net 60 Days from issue date)",
+            "type":"string"
+         },
+         "po_number":{
+            "title":"PurchaseOrderNumber",
+            "description":"Sales Order Number (e.g., 13665335)",
+            "type":"string"
+         },
+         "tax_id":{
+            "title":"TaxID",
+            "description":"Supplier Federal Tax ID (e.g., 52-2306147)",
+            "type":"string"
+         },
+         "shipment_id":{
+            "title":"ShipmentID",
+            "description":"Shipment identification number (e.g., 3953804)",
+            "type":"string"
+         },
+         "supplier_details":{
+            "title":"SupplierDetails",
+            "description":"Full supplier address with name",
+            "type":"string"
+         },
+         "supplier_country_code":{
+            "title":"SupplierCountryCode",
+            "description":"Two-letter ISO country code (US)",
+            "type":"string"
+         },
+         "buyer_details":{
+            "title":"BuyerDetails",
+            "description":"Full buyer address details",
+            "type":"string"
+         },
+         "buyer_country_code":{
+            "title":"BuyerCountryCode",
+            "description":"Two-letter ISO country code (US)",
+            "type":"string"
+         },
+         "ship_to_details":{
+            "title":"ShipToDetails",
+            "description":"Ship-to address and details",
+            "type":"string"
+         },
+         "ship_to_country_code":{
+            "title":"ShipToCountryCode",
+            "description":"Two-letter ISO country code (US)",
+            "type":"string"
+         },
+         "payment_terms":{
+            "title":"PaymentTerms",
+            "description":"Terms of payment (e.g., Net 60 Days)",
+            "type":"string"
+         },
+         "shipping_terms":{
+            "title":"ShippingTerms",
+            "description":"Shipping terms (e.g., FOB SHIPPING POINT)",
+            "type":"string"
+         },
+         "freight_terms":{
+            "title":"FreightTerms",
+            "description":"Freight terms (e.g., Freight Collect)",
+            "type":"string"
+         },
+         "shipping_method":{
+            "title":"ShippingMethod",
+            "description":"Method of shipping (e.g., CUSTOMERROUTING)",
+            "type":"string"
+         },
+         "subtotal":{
+            "title":"Subtotal",
+            "description":"Sum of all line items before tax",
+            "type":"number"
+         },
+         "tax":{
+            "title":"Tax",
+            "description":"Total tax amount",
+            "type":"number"
+         },
+         "total":{
+            "title":"Total",
+            "description":"Total invoice amount including tax",
+            "type":"number"
+         },
+         "total_weight":{
+            "title":"TotalWeight",
+            "description":"Total weight of shipment (e.g., 892.9968)",
+            "type":"number"
+         },
+         "currency":{
+            "title":"Currency",
+            "description":"USD (derived from context)",
+            "type":"string"
+         },
+         "line_items":{
+            "title":"LineItems",
+            "description":"Array of items included in the invoice",
+            "type":"array",
+            "items":{
+               "type":"object",
+               "properties":{
+                  "item_code":{
+                     "title":"ItemCode",
+                     "description":"Product code (e.g., NA002472)",
+                     "type":"string"
+                  },
+                  "description":{
+                     "title":"Description",
+                     "description":"Product description (e.g., 2 TUBE CLIP W/M6)",
+                     "type":"string"
+                  },
+                  "quantity":{
+                     "title":"Quantity",
+                     "description":"Quantity as integer from the QTY SHIP column (e.g., 875.000)",
+                     "type":"number"
+                  },
+                  "unit_of_measure":{
+                     "title":"UnitOfMeasure",
+                     "description":"Unit of measure (e.g., EA)",
+                     "type":"string"
+                  },
+                  "weight":{
+                     "title":"Weight",
+                     "description":"Weight from WT column (e.g., 24.9375)",
+                     "type":"number"
+                  },
+                  "unit_price":{
+                     "title":"UnitPrice",
+                     "description":"Price per unit (e.g., 390.0)",
+                     "type":"number"
+                  },
+                  "price_per":{
+                     "title":"PricePer",
+                     "description":"Price basis (e.g., M for thousand)",
+                     "type":"string"
+                  },
+                  "amount":{
+                     "title":"Amount",
+                     "description":"Extended amount (e.g., 341.25)",
+                     "type":"number"
+                  },
+                  "tool_number":{
+                     "title":"ToolNumber",
+                     "description":"Tool number (e.g., NA035214 TWO SHOT)",
+                     "type":"string"
+                  },
+                  "line_number":{
+                     "title":"LineNumber",
+                     "description":"Line number (e.g., 1.000)",
+                     "type":"string"
+                  },
+                  "reference_number":{
+                     "title":"ReferenceNumber",
+                     "description":"Additional reference (e.g., 31588253)",
+                     "type":"string"
+                  },
+                  "customer_po":{
+                     "title":"CustomerPO",
+                     "description":"Customer PO number (e.g., 5500033144)",
+                     "type":"string"
+                  },
+                  "pick_slip":{
+                     "title":"PickSlip",
+                     "description":"Pick slip number (e.g., 3953804)",
+                     "type":"string"
+                  },
+                  "currency":{
+                     "title":"Currency",
+                     "description":"Currency code (CZK, EUR, etc.). You would get this from the line item table header or from the currency associated with the unit or total price.",
+                     "type":"string"
+                  }
+               },
+               "required":[
+                  "item_code",
+                  "description",
+                  "quantity",
+                  "unit_of_measure",
+                  "unit_price",
+                  "amount",
+                  "tool_number",
+                  "customer_po",
+                  "pick_slip",
+                  "line_number"
+               ]
+            }
+         },
+         "notes":{
+            "title":"Notes",
+            "description":"Additional notes on invoice",
+            "type":"string"
+         },
+         "calculated_financials":{
+            "title":"CalculatedFinancials",
+            "description":"Calculated totals",
+            "type":"object",
+            "properties":{
+               "subtotal":{
+                  "title":"Subtotal",
+                  "description":"Sum of all line items",
+                  "type":"number"
+               },
+               "total":{
+                  "title":"Total",
+                  "description":"Final invoice total",
+                  "type":"number"
+               }
+            }
+         }
+      },
+      "required":[
+         "invoice_number",
+         "issue_date",
+         "po_number",
+         "supplier_details",
+         "buyer_details",
+         "line_items"
+      ]
+   },
+   "examples":[
+      {
+         "field":"item_code",
+         "example":"NA002472",
+         "extraction_guidance":"Located under PART IDENTIFICATION column"
+      },
+      {
+         "field":"quantity",
+         "example":"875",
+         "extraction_guidance":"Extract the integer value from QTY SHIP (e.g., '875.000 EA' → 875)"
+      },
+      {
+         "field":"weight",
+         "example":"24.9375",
+         "extraction_guidance":"From WT column, not to be confused with quantity"
+      },
+      {
+         "field":"unit_price",
+         "example":"390.000000",
+         "extraction_guidance":"Extract numeric value from UNIT PRICE column (e.g., '390.000000 M' → 390.0)"
+      },
+      {
+         "field":"price_per",
+         "example":"M",
+         "extraction_guidance":"Extract unit basis from UNIT PRICE column (e.g., 'M' for per thousand)"
+      },
+      {
+         "field":"tool_number",
+         "example":"NA035214 TWO SHOT",
+         "extraction_guidance":"Extract from description after 'TOOL NUMBER'"
+      },
+      {
+         "field":"line_number",
+         "example":"1.000",
+         "extraction_guidance":"Extract from description after 'Line No:'"
+      }
+   ]
+}
+
+Return the complete invoice data in a well formatted JSON string only.
