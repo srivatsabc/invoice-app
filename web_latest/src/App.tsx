@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, Search, AlertTriangle, ChevronDown, Mountain as Mountains, Settings, BarChart3, ChevronLeft, ChevronRight, MessageSquare, FileSearch, Bell, LineChart, Download, Database, Shield } from 'lucide-react';
+import { Menu, Search, AlertTriangle, ChevronDown, Mountain as Mountains, Settings, BarChart3, ChevronLeft, ChevronRight, MessageSquare, FileSearch, Bell, LineChart, Download, Database, Shield, Activity, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Bar, Pie } from 'react-chartjs-2';
 import {
@@ -24,6 +24,10 @@ import NotificationPreferences from './components/NotificationPreferences';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import ExportForAnalysis from './components/ExportForAnalysis';
 import ControlCenter from './components/ControlCenter';
+import AnalyseIncidents from './components/AnalyseIncidents';
+import LiveIncidents from './components/LiveIncidents';
+import AnalyseUATDefects from './components/AnalyseUATDefects';
+import PaymentInfo from './components/PaymentInfo';
 import { generateSessionId } from './utils/session';
 
 ChartJS.register(
@@ -113,12 +117,16 @@ const getTodayDate = () => {
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<'business_user' | 'admin'>('business_user');
+  const [userRole, setUserRole] = useState<'business_user' | 'admin' | 'itsm_admin'>('business_user');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDocked, setIsDocked] = useState(true);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'search' | 'failed' | 'analyze' | 'analyzeWithPrompts' | 'promptRegistry' | 'notifications' | 'metrics' | 'export' | 'controlCenter'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'search' | 'paymentInfo' | 'failed' | 'analyze' | 'analyzeWithPrompts' | 'promptRegistry' | 'notifications' | 'metrics' | 'export' | 'controlCenter' | 'analyseIncidents' | 'liveIncidents' | 'analyseUATDefects'>(() => {
+    // Set initial page based on stored user role
+    const storedRole = localStorage.getItem('userRole');
+    return storedRole === 'itsm_admin' ? 'analyseIncidents' : 'dashboard';
+  });
   const [username, setUsername] = useState<string>('');
   const [dateRange, setDateRange] = useState({
     from: '2024-01-01',
@@ -149,6 +157,16 @@ function App() {
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Listen for navigation events
+  useEffect(() => {
+    const handleNavigateToPaymentInfo = () => {
+      setCurrentPage('paymentInfo');
+    };
+
+    window.addEventListener('navigateToPaymentInfo', handleNavigateToPaymentInfo);
+    return () => window.removeEventListener('navigateToPaymentInfo', handleNavigateToPaymentInfo);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -169,12 +187,18 @@ function App() {
   useEffect(() => {
     // Initialize app and check for existing session
     const storedUsername = localStorage.getItem('username');
-    const storedRole = localStorage.getItem('userRole') as 'business_user' | 'admin' | null;
+    const storedRole = localStorage.getItem('userRole') as 'business_user' | 'admin' | 'itsm_admin' | null;
     
     if (storedUsername && storedRole) {
       setUsername(storedUsername);
       setUserRole(storedRole);
       setIsAuthenticated(true);
+      // Set the correct page based on role when restoring session
+      if (storedRole === 'itsm_admin') {
+        setCurrentPage('analyseIncidents');
+      } else {
+        setCurrentPage('dashboard');
+      }
     }
     setIsLoading(false);
   }, []);
@@ -199,7 +223,7 @@ function App() {
     }
   };
 
-  const handleLogin = (username: string, role: 'business_user' | 'admin') => {
+  const handleLogin = (username: string, role: 'business_user' | 'admin' | 'itsm_admin') => {
     localStorage.setItem('username', username);
     localStorage.setItem('userRole', role);
     localStorage.setItem('sessionId', generateSessionId());
@@ -207,7 +231,11 @@ function App() {
     setUserRole(role);
     setIsAuthenticated(true);
     setIsDataLoaded(false); // Reset data loaded state for new login
-    setCurrentPage('dashboard');
+    if (role === 'itsm_admin') {
+      setCurrentPage('analyseIncidents');
+    } else {
+      setCurrentPage('dashboard');
+    }
   };
 
   const handleLogout = () => {
@@ -224,10 +252,10 @@ function App() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && username && !dashboardData) {
+    if (isAuthenticated && username && !dashboardData && userRole !== 'itsm_admin') {
       fetchInitialData();
     }
-  }, [isAuthenticated, username, dashboardData]);
+  }, [isAuthenticated, username, dashboardData, userRole]);
 
   const fetchInitialData = async () => {
     setIsLoading(true);
@@ -404,6 +432,24 @@ function App() {
 
   // Define menu items based on role
   const getMenuItems = () => {
+    const itsmAdminItems = [
+      {
+        id: 'analyseIncidents',
+        icon: <BarChart3 size={20} className="text-red-400 flex-shrink-0" />,
+        label: 'Analyse Incidents'
+      },
+      {
+        id: 'liveIncidents',
+        icon: <Activity size={20} className="text-orange-400 flex-shrink-0" />,
+        label: 'Live Incidents'
+      },
+      {
+        id: 'analyseUATDefects',
+        icon: <Shield size={20} className="text-purple-400 flex-shrink-0" />,
+        label: 'Analyse UAT Defects'
+      }
+    ];
+
     const businessUserItems = [
       {
         id: 'dashboard',
@@ -414,6 +460,11 @@ function App() {
         id: 'search',
         icon: <Search size={20} className="text-cyan-400 flex-shrink-0" />,
         label: t('searchInvoices')
+      },
+      {
+        id: 'paymentInfo',
+        icon: <CreditCard size={20} className="text-green-400 flex-shrink-0" />,
+        label: 'Payment Info'
       },
       {
         id: 'failed',
@@ -461,13 +512,21 @@ function App() {
       }
     ];
 
-    return userRole === 'admin' ? adminItems : businessUserItems;
+    return userRole === 'itsm_admin' ? itsmAdminItems : userRole === 'admin' ? adminItems : businessUserItems;
   };
 
   const renderContent = () => {
     switch (currentPage) {
+      case 'analyseIncidents':
+        return <AnalyseIncidents />;
+      case 'liveIncidents':
+        return <LiveIncidents />;
+      case 'analyseUATDefects':
+        return <AnalyseUATDefects />;
       case 'search':
         return <SearchInvoices regionsData={regionsData} />;
+      case 'paymentInfo':
+        return <PaymentInfo />;
       case 'analyze':
         return <AnalyzeInvoices />;
       case 'analyzeWithPrompts':
@@ -588,13 +647,185 @@ function App() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-medium text-gray-800 mb-4">Invoice Analytics</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="h-64">
+                    <h4 className="text-md font-medium text-gray-700 mb-4">Accounts Payable Aging</h4>
+                    <div className="relative h-full">
+                      <Bar 
+                        data={{
+                          labels: ['Current', '1-30', '31-60', '>60'],
+                          datasets: [
+                            {
+                              label: 'Invoice Amount (M)',
+                              data: [6, 2, 1, 3],
+                              backgroundColor: '#1e88e5',
+                            }
+                          ]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              display: true,
+                              position: 'top' as const,
+                            },
+                          },
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              title: {
+                                display: true,
+                                text: 'Amount (M)'
+                              }
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: 'Days Outstanding'
+                              }
+                            }
+                          },
+                        }}
+                      />
+                      {/* Diamond overlays for invoice count */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        <div className="relative h-full flex items-center justify-center">
+                          <div className="flex justify-between w-full px-16">
+                            {/* Current - 150 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 20px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 40px)' }}>150</span>
+                            </div>
+                            {/* 1-30 - 80 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 20px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 40px)' }}>80</span>
+                            </div>
+                            {/* 31-60 - 40 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 60px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 80px)' }}>40</span>
+                            </div>
+                            {/* >60 - 120 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 10px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 30px)' }}>120</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-64">
+                    <h4 className="text-md font-medium text-gray-700 mb-4">Upcoming Payments</h4>
+                    <div className="relative h-full">
+                      <Bar 
+                        data={{
+                          labels: ['Now', '15 Days', '30 Days', '>30 Days'],
+                          datasets: [
+                            {
+                              label: 'Invoice Amount (M)',
+                              data: [10, 3, 2, 5],
+                              backgroundColor: '#1e88e5',
+                            }
+                          ]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
+                              display: true,
+                              position: 'top' as const,
+                            },
+                          },
+                          scales: {
+                            y: {
+                              beginAtZero: true,
+                              title: {
+                                display: true,
+                                text: 'Amount (M)'
+                              }
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: 'Payment Timeline'
+                              }
+                            }
+                          },
+                        }}
+                      />
+                      {/* Diamond overlays for invoice count */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        <div className="relative h-full flex items-center justify-center">
+                          <div className="flex justify-between w-full px-16">
+                            {/* Now - 200 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% - 30px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% - 10px)' }}>200</span>
+                            </div>
+                            {/* 15 Days - 60 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 20px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 40px)' }}>60</span>
+                            </div>
+                            {/* 30 Days - 30 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 60px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 80px)' }}>30</span>
+                            </div>
+                            {/* >30 Days - 100 invoices */}
+                            <div className="flex flex-col items-center relative">
+                              <div className="w-3 h-3 bg-[#dc2626] transform rotate-45 absolute" style={{ top: 'calc(50% + 10px)' }}></div>
+                              <span className="text-xs text-gray-600 absolute" style={{ top: 'calc(50% + 30px)' }}>100</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center justify-center h-full">
+                  <div className="bg-gradient-to-br from-gray-700 to-gray-800 text-white p-6 rounded-lg text-center shadow-lg">
+                    <div className="text-sm text-gray-300 mb-1">Total AP</div>
+                    <div className="text-sm text-gray-300 mb-2">Outstanding</div>
+                    <div className="text-3xl font-bold mb-2">7.97M</div>
+                    <div className="text-sm text-gray-300 mb-1">Invoice SUM</div>
+                    <div className="text-2xl font-bold text-yellow-400 mb-1">35%</div>
+                    <div className="text-xs text-gray-300">Invoice Overdue</div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-medium text-gray-800 mb-4">{t('processingTrend')}</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="h-64">
                     <Bar 
-                      data={barChartData}
+                      data={{
+                        labels: dashboardData?.processingTrend.labels || [],
+                        datasets: [
+                          {
+                            label: 'Success',
+                            data: dashboardData?.processingTrend.success || [],
+                            backgroundColor: '#1e88e5',
+                          },
+                          {
+                            label: 'Failed',
+                            data: dashboardData?.processingTrend.failed || [],
+                            backgroundColor: '#dc2626',
+                          }
+                        ]
+                      }}
                       options={{
                         responsive: true,
                         maintainAspectRatio: false,
@@ -604,7 +835,7 @@ function App() {
                           },
                           y: {
                             stacked: true,
-                          },
+                          }
                         },
                       }}
                     />
@@ -649,7 +880,7 @@ function App() {
                 </div>
                 
                 {showTop5Fields && (
-                  <div className="space-y-3">
+                  <div className="space-y-1">
                     <div className="relative">
                       <button
                         onClick={() => toggleDropdown('header')}
@@ -689,6 +920,7 @@ function App() {
                       )}
                     </div>
 
+
                     <div className="relative">
                       <button
                         onClick={() => toggleDropdown('lineItems')}
@@ -725,9 +957,10 @@ function App() {
                             </div>
                           ))}
                         </div>
-                      )}
+                       )}
                     </div>
 
+                    
                     <div className="relative">
                       <button
                         onClick={() => toggleDropdown('taxData')}
@@ -745,7 +978,7 @@ function App() {
                         <div className="mt-1 border border-gray-200 rounded-md">
                           {dashboardData?.top5Fields.taxData.fields.map((field, index) => (
                             <div 
-                              key={index} 
+                              key={index}
                               className="p-2 hover:bg-gray-50 cursor-pointer text-gray-900"
                               onClick={() => toggleDropdown('taxData', field)}
                             >
@@ -766,6 +999,7 @@ function App() {
                         </div>
                       )}
                     </div>
+
                   </div>
                 )}
               </div>
@@ -810,10 +1044,17 @@ function App() {
                 </button>
               )}
               <div className="flex items-center space-x-2">
-                <Mountains size={32} />
-                <span className="text-xl font-semibold">Company Name</span>
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center p-2">
+                  <img 
+                    src="/artificial-intelligence.png" 
+                    alt="" 
+                    className="w-12 h-12"
+                  />
+                </div>
+                <span className="text-xl font-semibold">
+                  {userRole === 'itsm_admin' ? 'Smart ITSM Analytics Hub' : 'Smart Account Payables Hub'}
+                </span>
               </div>
-              <h1 className="text-xl font-semibold hidden md:block">GBS – Invoice Assistant</h1>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -821,7 +1062,7 @@ function App() {
                 <button 
                   ref={profileButtonRef}
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg transition-colors"
+                  className="flex items-center space-x-2 bg-white hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors text-gray-800"
                 >
                   <img 
                     src="/assistant-icon.png" 
@@ -829,7 +1070,7 @@ function App() {
                     className="w-6 h-6 rounded-full"
                   />
                   <span className="hidden md:inline">{username}</span>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={16} className="text-gray-600" />
                 </button>
                 
                 {isProfileOpen && (
@@ -841,7 +1082,7 @@ function App() {
                       <p className="font-medium">{username}</p>
                       <p className="text-sm text-gray-500">{username.toLowerCase()}@company.com</p>
                       <p className="text-xs text-blue-600 mt-1 capitalize">
-                        {userRole === 'business_user' ? 'Business User' : 'Administrator'}
+                        {userRole === 'business_user' ? 'Business User' : userRole === 'admin' ? 'Administrator' : 'ITSM Administrator'}
                       </p>
                     </div>
                     <hr className="my-2" />

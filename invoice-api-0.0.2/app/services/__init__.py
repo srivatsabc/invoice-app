@@ -11,4 +11,4 @@ from .feedback_service import FeedbackService
 from .agent_logs_service import AgentLogsService
 from .agent_control_service import AgentControlService
 
-__all__ = ["InvoiceService", "DashboardService", "RegionsService", "PromptRegistryService", "FeedbackService", "AgentLogsService", "AgentControlService"]
+__all__ = ["InvoiceService", "DashboardService", "RegionsService", "PromptRegistryService", "FeedbackService", "AgentLogsService", "AgentControlService", "InvoicePaymentService"]

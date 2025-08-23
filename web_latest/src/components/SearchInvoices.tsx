@@ -360,7 +360,7 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [sortConfig, setSortConfig] = useState({
     field: 'invoiceNumber' as keyof SearchResult,
     direction: 'asc' as 'asc' | 'desc'
@@ -473,7 +473,18 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
 
       const data = await response.json();
       setSearchResults(data.results || []);
-      setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+      
+      // Use pagination info from API response
+      if (data.pagination) {
+        setTotalPages(data.pagination.totalPages || 0);
+        // Update current page if it's different from what we expected
+        if (data.pagination.page !== currentPage) {
+          setCurrentPage(data.pagination.page);
+        }
+      } else {
+        // Fallback to calculating from total count
+        setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error searching invoices:', err);
@@ -482,13 +493,10 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
     }
   };
 
-  const handleViewInvoice = async (invoiceNumber: string, invoiceId: string) => {
+  const handleViewInvoice = async (invoiceNumber: string, invoiceId: string, invoiceData: SearchResult) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Find the search result for this invoice to get the brand name
-      const searchResult = searchResults.find(result => result.invoiceNumber === invoiceNumber);
-      
       // Use the new API endpoint format with both invoice number and ID
       const response = await fetch(`${API_ENDPOINTS.SEARCH_INVOICES}/invoices/${invoiceNumber}/ids/${invoiceId}`);
       if (!response.ok) {
@@ -496,7 +504,7 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
       }
       const data = await response.json();
       setSelectedInvoice(data);
-      setSelectedInvoiceData(searchResult || null);
+      setSelectedInvoiceData(invoiceData || null);
       setShowInvoiceViewer(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -569,6 +577,7 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
     });
     setSearchResults([]);
     setCurrentPage(1);
+    setTotalPages(0);
     setSortConfig({
       field: 'invoiceNumber',
       direction: 'asc'
@@ -603,10 +612,11 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
   const visibleColumns = columns.filter(col => col.visible);
 
   useEffect(() => {
+    // Trigger search when page changes (but not on initial load when no results exist)
     if (searchResults.length > 0) {
       handleSearch();
     }
-  }, [currentPage, sortConfig]);
+  }, [currentPage]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -868,14 +878,14 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className="bg-gray-50">
+                  <tr className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 border-b-2 border-blue-300">
                     {visibleColumns.map((column) => {
                       if (column.key === 'agentLogs' && !isLoggingEnabled) return null;
                       
                       return (
                         <th 
                           key={column.key}
-                          className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                          className={`px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider ${
                             ['invoiceNumber', 'vendor', 'recdDate'].includes(column.key) ? 'cursor-pointer' : ''
                           }`}
                           onClick={() => {
@@ -888,12 +898,12 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
                             <span>{column.label}</span>
                             {['invoiceNumber', 'vendor', 'recdDate'].includes(column.key) && (
                               <div className="flex flex-col">
-                                <ChevronUp size={12} className={sortConfig.field === column.key && sortConfig.direction === 'asc' ? 'text-blue-600' : ''} />
-                                <ChevronDown size={12} className={sortConfig.field === column.key && sortConfig.direction === 'desc' ? 'text-blue-600' : ''} />
+                                <ChevronUp size={12} className={sortConfig.field === column.key && sortConfig.direction === 'asc' ? 'text-yellow-300' : 'text-white/60'} />
+                                <ChevronDown size={12} className={sortConfig.field === column.key && sortConfig.direction === 'desc' ? 'text-yellow-300' : 'text-white/60'} />
                               </div>
                             )}
                             {column.key === 'agentLogs' && (
-                              <Bot className="w-4 h-4" />
+                              <Bot className="w-4 h-4 text-white" />
                             )}
                           </div>
                         </th>
@@ -901,32 +911,34 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
                     })}
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-100">
                   {searchResults.map((result, index) => (
-                    <tr key={result.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <tr key={result.id} className={`transition-all duration-200 hover:bg-blue-50 hover:shadow-sm ${
+                      index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'
+                    }`}>
                       {visibleColumns.map((column) => {
                         if (column.key === 'agentLogs' && !isLoggingEnabled) return null;
                         
                         if (column.key === 'agentLogs') {
                           return (
-                            <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm">
                               <div className="flex items-center justify-center">
                                 {result.hasLogs === 'Yes' ? (
                                   <button
                                     onClick={() => handleViewAgentLogs(result.id, result.invoiceNumber)}
                                     disabled={isLoadingLogs}
-                                    className="w-full flex items-center justify-center space-x-2 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                                    className="w-full flex items-center justify-center space-x-2 hover:bg-blue-100 px-3 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 hover:scale-105"
                                     title="Click to view agent logs"
                                   >
                                     <img 
                                       src="/robot.png" 
                                       alt="Agent Logs Available" 
-                                      className="w-5 h-5"
+                                      className="w-5 h-5 drop-shadow-sm"
                                     />
-                                    <span className="text-xs text-green-600 font-medium">Available</span>
+                                    <span className="text-xs text-green-700 font-semibold">Available</span>
                                   </button>
                                 ) : (
-                                  <span className="text-xs text-gray-400">No logs</span>
+                                  <span className="text-xs text-gray-500 font-medium">No logs</span>
                                 )}
                               </div>
                             </td>
@@ -935,14 +947,14 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
                         
                         if (column.key === 'actions') {
                           return (
-                            <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm">
                               <button 
-                                className={`transition-colors ${
+                                className={`p-2 rounded-lg transition-all duration-200 ${
                                   isActionButtonEnabled(result.status)
-                                    ? 'text-blue-600 hover:text-blue-800'
-                                    : 'text-gray-400 cursor-not-allowed'
+                                    ? 'text-blue-600 hover:text-blue-800 hover:bg-blue-50 hover:scale-110'
+                                    : 'text-gray-400 cursor-not-allowed opacity-50'
                                 }`}
-                                onClick={() => isActionButtonEnabled(result.status) && handleViewInvoice(result.invoiceNumber, result.id)}
+                                onClick={() => isActionButtonEnabled(result.status) && handleViewInvoice(result.invoiceNumber, result.id, result)}
                                 disabled={isLoading || !isActionButtonEnabled(result.status)}
                                 title={
                                   isActionButtonEnabled(result.status)
@@ -961,18 +973,20 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
                         if (column.key === 'status') {
                           return (
                             <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              <span className={`px-3 py-1.5 text-xs font-bold rounded-full shadow-sm ${
                                 result.status === 'Approved' 
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200'
+                                 : result.status === 'Posted'
+                                 ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200'
                                   : result.status === 'Pending'
-                                  ? 'bg-yellow-100 text-yellow-800'
+                                  ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200'
                                   : result.status === 'In Review'
-                                  ? 'bg-blue-100 text-blue-800'
+                                  ? 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200'
                                   : result.status === 'Extracted'
-                                  ? 'bg-purple-100 text-purple-800'
+                                  ? 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 border border-purple-200'
                                   : result.status === 'Processed'
-                                  ? 'bg-cyan-100 text-cyan-800'
-                                  : 'bg-red-100 text-red-800'
+                                  ? 'bg-gradient-to-r from-cyan-100 to-teal-100 text-cyan-800 border border-cyan-200'
+                                  : 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200'
                               }`}>
                                 {result.status}
                               </span>
@@ -981,7 +995,7 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
                         }
                         
                         return (
-                          <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
                             {result[column.key as keyof SearchResult]}
                           </td>
                         );
@@ -1039,7 +1053,8 @@ const SearchInvoices: React.FC<SearchInvoicesProps> = ({ regionsData }) => {
             region: selectedInvoiceData?.region,
             country: selectedInvoiceData?.country,
             vendor: selectedInvoiceData?.vendor,
-            brandName: selectedInvoiceData?.brandName
+            brandName: selectedInvoiceData?.brandName,
+            headerId: selectedInvoiceData?.id
           }}
         />
       )}

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Mountain as Mountains, User, Shield } from 'lucide-react';
+import { Mountain as Mountains, User, Shield, BarChart3 } from 'lucide-react';
 import { LOGIN_CREDENTIALS } from '../constants/api';
 
 interface LoginProps {
-  onLogin: (username: string, role: 'business_user' | 'admin') => void;
+  onLogin: (username: string, role: 'business_user' | 'admin' | 'itsm_admin') => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'business_user' | 'admin'>('admin');
+  const [role, setRole] = useState<'business_user' | 'admin' | 'itsm_admin'>('admin');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -113,7 +113,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     type="radio"
                     value="business_user"
                     checked={role === 'business_user'}
-                    onChange={(e) => setRole(e.target.value as 'business_user' | 'admin')}
+                    onChange={(e) => setRole(e.target.value as 'business_user' | 'admin' | 'itsm_admin')}
                     disabled={isLoading}
                     className="sr-only"
                   />
@@ -143,7 +143,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     type="radio"
                     value="admin"
                     checked={role === 'admin'}
-                    onChange={(e) => setRole(e.target.value as 'business_user' | 'admin')}
+                    onChange={(e) => setRole(e.target.value as 'business_user' | 'admin' | 'itsm_admin')}
                     disabled={isLoading}
                     className="sr-only"
                   />
@@ -164,6 +164,38 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     </div>
                     <p className="text-xs text-gray-500">
                       Full system access and administrative controls
+                    </p>
+                  </div>
+                </label>
+              </div>
+              
+              <div className="mt-3">
+                <label className="relative">
+                  <input
+                    type="radio"
+                    value="itsm_admin"
+                    checked={role === 'itsm_admin'}
+                    onChange={(e) => setRole(e.target.value as 'business_user' | 'admin' | 'itsm_admin')}
+                    disabled={isLoading}
+                    className="sr-only"
+                  />
+                  <div className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    role === 'itsm_admin'
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-gray-200 hover:border-red-200'
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <BarChart3 className={`w-5 h-5 ${
+                        role === 'itsm_admin' ? 'text-red-600' : 'text-gray-400'
+                      }`} />
+                      <span className={`font-medium ${
+                        role === 'itsm_admin' ? 'text-red-900' : 'text-gray-700'
+                      }`}>
+                        ITSM Admin
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Access to incident analysis and ITSM tools
                     </p>
                   </div>
                 </label>

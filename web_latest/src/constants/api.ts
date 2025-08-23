@@ -1,5 +1,5 @@
-export const API_BASE_URL = 'http://localhost:8088/api/v3';
-export const PROCESS_MANAGEMENT_BASE_URL = 'http://localhost:8099/api/v3';
+export const API_BASE_URL = 'https://apimaznazone1dev02-erd2fub2a9agacak.eastus-01.azurewebsites.net/api/v3';
+export const PROCESS_MANAGEMENT_BASE_URL = 'https://apimaznazone1dev03-awgdcya7g7dnhzaa.eastus-01.azurewebsites.net/api/v3';
 
 export const API_ENDPOINTS = {
   DASHBOARD: `${API_BASE_URL}/invoice-management/dashboard`,

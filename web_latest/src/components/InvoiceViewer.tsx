@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, CheckCircle, AlertCircle, Save, Pencil, X, RefreshCw, Zap, Code, Sparkles } from 'lucide-react';
+import { MessageSquare, CheckCircle, AlertCircle, Save, Pencil, X, RefreshCw, Zap, Code, Sparkles, CreditCard, ExternalLink } from 'lucide-react';
 import InvoiceViewerLayout from './InvoiceViewerLayout';
 import { API_BASE_URL, API_ENDPOINTS } from '../constants/api';
 import { v4 as uuidv4 } from 'uuid';
@@ -71,6 +71,132 @@ interface InvoiceViewerProps {
   pages?: string;
   onReAnalyze?: (updatedSchema: string, updatedPrompt: string, updatedInstructions: string) => Promise<AnalysisResponse>;
 }
+
+interface PaymentResponse {
+  success: boolean;
+  message: string;
+  payment: {
+    id: number;
+    invoice_header_id: string;
+    invoice_number: string;
+    batch_number: number;
+    pay_rule_id: string;
+    payment_time: string;
+    payment_date: string;
+    batch_amount: number;
+    currency: string;
+    amount_paid: number;
+    created_at: string;
+    updated_at: string;
+    created_by: string;
+  };
+  invoice_status_updated: boolean;
+}
+
+interface PaymentSuccessModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  paymentData: PaymentResponse | null;
+  onViewPaymentInfo: () => void;
+}
+
+const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
+  isOpen,
+  onClose,
+  paymentData,
+  onViewPaymentInfo
+}) => {
+  if (!isOpen || !paymentData) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[70]">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-t-xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Posted Invoice in SAP</h3>
+                <p className="text-green-100 text-sm">Payment processed successfully</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          <div className="space-y-4">
+            {/* Success Message */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-green-800">{paymentData.message}</p>
+                  <p className="text-sm text-green-600 mt-1">
+                    Batch Number: {paymentData.payment.batch_number}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Details */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-800 mb-3">Payment Details</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Invoice Number:</span>
+                  <span className="font-medium text-gray-900">{paymentData.payment.invoice_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Amount Paid:</span>
+                  <span className="font-medium text-gray-900">
+                    {paymentData.payment.currency} {paymentData.payment.amount_paid.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Date:</span>
+                  <span className="font-medium text-gray-900">{paymentData.payment.payment_date}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Payment Time:</span>
+                  <span className="font-medium text-gray-900">{paymentData.payment.payment_time}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between mt-6">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={onViewPaymentInfo}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>View Payment Info</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface PromptViewerModalProps {
   isOpen: boolean;
@@ -417,6 +543,12 @@ export default function InvoiceViewer({
   const [saveTemplateError, setSaveTemplateError] = useState<string | null>(null);
   const [saveTemplateSuccess, setSaveTemplateSuccess] = useState<string | null>(null);
   const [hasBeenSaved, setHasBeenSaved] = useState(false);
+  
+  // Payment submission state
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentResponse, setPaymentResponse] = useState<PaymentResponse | null>(null);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
   // Fetch regions data on mount for template saving
   React.useEffect(() => {
@@ -456,17 +588,94 @@ export default function InvoiceViewer({
       return;
     }
     
-    setIsSubmitting(true);
-    try {
-      // Add your submit logic here
-      console.log('Submitting invoice data...');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      onClose();
-    } catch (error) {
-      console.error('Error submitting:', error);
-    } finally {
-      setIsSubmitting(false);
+    // Handle payment submission for regular invoice viewer
+    await handlePaymentSubmission();
+  };
+
+  const handlePaymentSubmission = async () => {
+    if (!currentAnalysisResult?.header.invoiceNumber) {
+      setPaymentError('Invoice number not found');
+      return;
     }
+
+    // Get the header ID from the selected invoice data (from search results)
+    const headerIdFromSearch = (invoiceData as any)?.headerId || (invoiceData as any)?.id;
+    
+    if (!headerIdFromSearch) {
+      setPaymentError('Header ID not found. Please reopen the invoice from the search screen.');
+      return;
+    }
+
+    setIsSubmittingPayment(true);
+    setPaymentError(null);
+
+    try {
+      // Calculate total amount from line items
+      const totalAmount = currentAnalysisResult.lineItems?.reduce((sum, item) => sum + item.totalPrice, 0) || 0;
+      
+      // Get current date and time
+      const now = new Date();
+      const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      const currentTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+      
+      // Get logged in username
+      const username = localStorage.getItem('username') || 'unknown_user';
+      
+      const paymentPayload = {
+        payment_time: currentTime,
+        payment_date: currentDate,
+        batch_amount: totalAmount,
+        currency: "USD", // Default to USD, could be extracted from invoice data
+        amount_paid: 0, // Blank as requested
+        created_by: username
+      };
+
+      console.log('Submitting payment with payload:', paymentPayload);
+      console.log('Invoice Number:', currentAnalysisResult.header.invoiceNumber);
+      console.log('Header ID:', headerIdFromSearch);
+      console.log('API endpoint:', `${API_ENDPOINTS.SEARCH_INVOICES}/invoices/${currentAnalysisResult.header.invoiceNumber}/ids/${headerIdFromSearch}/payments`);
+
+      const response = await fetch(
+        `${API_ENDPOINTS.SEARCH_INVOICES}/invoices/${currentAnalysisResult.header.invoiceNumber}/ids/${headerIdFromSearch}/payments`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentPayload)
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Payment API error response:', errorText);
+        throw new Error(`Failed to submit payment: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const result: PaymentResponse = await response.json();
+      console.log('Payment submission successful:', result);
+      setPaymentResponse(result);
+      setShowPaymentSuccess(true);
+      
+    } catch (err) {
+      console.error('Payment submission error:', err);
+      setPaymentError(err instanceof Error ? err.message : 'Failed to submit payment');
+      
+      // Auto-hide error message after 5 seconds
+      setTimeout(() => {
+        setPaymentError(null);
+      }, 5000);
+    } finally {
+      setIsSubmittingPayment(false);
+    }
+  };
+
+  const handleViewPaymentInfo = () => {
+    // Navigate to payment info screen
+    setShowPaymentSuccess(false);
+    onClose();
+    // Trigger navigation to payment info page
+    window.dispatchEvent(new CustomEvent('navigateToPaymentInfo'));
   };
 
   const handleSaveTemplate = async () => {
@@ -839,10 +1048,21 @@ export default function InvoiceViewer({
             ) : !hasBeenSaved ? (
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || isSavingTemplate}
+                disabled={isSubmittingPayment || isSavingTemplate}
                 className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
-                {(isSubmitting || isSavingTemplate) ? 'Saving...' : isAnalyzeWithPrompts ? 'Save Template' : 'Submit'}
+                {isSubmittingPayment ? (
+                  <div className="flex items-center space-x-2">
+                    <RefreshCw size={16} className="animate-spin" />
+                    <span>Submitting...</span>
+                  </div>
+                ) : isSavingTemplate ? (
+                  'Saving...'
+                ) : isAnalyzeWithPrompts ? (
+                  'Save Template'
+                ) : (
+                  'Submit'
+                )}
               </button>
             ) : null}
           </div>
@@ -873,6 +1093,14 @@ export default function InvoiceViewer({
           isSaving={isSavingFeedback}
         />
       )}
+
+      {/* Payment Success Modal */}
+      <PaymentSuccessModal
+        isOpen={showPaymentSuccess}
+        onClose={() => setShowPaymentSuccess(false)}
+        paymentData={paymentResponse}
+        onViewPaymentInfo={handleViewPaymentInfo}
+      />
     </>
   );
 }

@@ -1,9 +1,11 @@
+# app/main.py - Updated to include invoice payment router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request, Response
 import uvicorn
 from .routers import invoice, dashboard, invoice_tester, sql_agent, prompt
 from .routers import regions, prompt_registry, feedback, agent_logs, agent_control
+from .routers import invoice_payment  # NEW: Import the invoice payment router
 from .middleware.logging import RequestLoggingMiddleware, logger, Colors
 
 app = FastAPI(
@@ -38,6 +40,7 @@ app.include_router(prompt_registry.router)
 app.include_router(feedback.router)
 app.include_router(agent_logs.router)
 app.include_router(agent_control.router)
+app.include_router(invoice_payment.router)  # NEW: Include the invoice payment router
 
 @app.get("/")
 async def root():
